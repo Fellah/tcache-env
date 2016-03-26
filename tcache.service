@@ -1,0 +1,14 @@
+[Unit]
+Description=TCache
+
+[Service]
+ExecStartPre=-/usr/bin/docker rm --volumes tcache
+ExecStart=/usr/bin/docker run \
+	--env-file %h/.config/tcache/tcache.env \
+	--publish 8080:8080 \
+	--name tcache \
+	fellah/tcache
+ExecStop=/usr/bin/docker stop tcache
+
+[Install]
+WantedBy=default.target
