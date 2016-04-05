@@ -1,9 +1,11 @@
 [Unit]
 Description=TCache
+Requires=tcache-db.service
 
 [Service]
 ExecStartPre=-/usr/bin/docker rm --volumes tcache
 ExecStart=/usr/bin/docker run \
+	--link tcache-db \
 	--env-file %h/.config/tcache/tcache.env \
 	--publish 8080:8080 \
 	--name tcache \

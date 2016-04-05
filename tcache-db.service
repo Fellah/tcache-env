@@ -1,0 +1,15 @@
+[Unit]
+Description=TCache: DataBase
+
+[Service]
+ExecStartPre=-/usr/bin/docker rm -v tcache-db
+ExecStart=/usr/bin/docker run \
+	--env-file %h/.config/tcache/tcache-db.env \
+	--publish 5432:5432 \
+	--volume %h/.cache/tcache:/var/lib/postgresql/data \
+	--name tcache-db \
+	postgres
+ExecStop=/usr/bin/docker stop tcache-db
+
+[Install]
+WantedBy=default.target
