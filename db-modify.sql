@@ -16,4 +16,7 @@ ALTER TABLE cached_sletat_tours DROP COLUMN original_currency_id RESTRICT;
 ALTER TABLE cached_sletat_tours DROP COLUMN original_currency_name RESTRICT;
 
 ALTER TABLE cached_sletat_tours ADD COLUMN room_id INTEGER;
+ALTER TABLE cached_sletat_tours ADD COLUMN kid1age INTEGER;
+ALTER TABLE cached_sletat_tours ADD COLUMN kid2age INTEGER;
+ALTER TABLE cached_sletat_tours ADD COLUMN kid3age INTEGER;
 --ALTER TABLE cached_sletat_tours ADD COLUMN room_name VARCHAR(255);
