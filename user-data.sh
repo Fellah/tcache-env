@@ -12,6 +12,7 @@ echo "deb https://apt.dockerproject.org/repo ubuntu-wily main" > /etc/apt/source
 apt-get update
 apt-get -y install docker-engine
 service docker start
+apt-get clean
 
 ## Manage Users
 
