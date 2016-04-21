@@ -8,10 +8,17 @@ setup:
 	ssh $(SSH_HOST) 'systemctl --user daemon-reload'
 	ssh $(SSH_HOST) 'systemctl --user enable tcache.service'
 
-deploy:
+build:
+	go fmt github.com/fellah/tcache
+	go vet github.com/fellah/tcache
+	go build -tags=pprof -o ~/Devel/tcache/env/tcache github.com/fellah/tcache
+	docker build -t fellah/tcache --no-cache ~/Devel/tcache/env/
+
+deploy: build
+	docker push fellah/tcache
 	ssh $(SSH_HOST) 'docker pull fellah/tcache'
 	ssh $(SSH_HOST) 'systemctl --user restart tcache.service'
 
 .DEFAULT_GOAL := deploy
 
-.PHONY: setup
+.PHONY: build setup deploy
