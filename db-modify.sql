@@ -35,11 +35,12 @@ CREATE UNIQUE INDEX offer_id_and_request_id ON cached_sletat_tours (offer_id, re
 CREATE UNIQUE INDEX agregate_type_and_item_id ON agregate_data_for_cached_sletat_tour (agregate_for_type, agregate_item_id);
 
 CREATE TABLE agregate_data_for_cached_sletat_tours (
-  id INTEGER PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   agregate_item_id INTEGER,
   agregate_for_type VARCHAR(32),
   price INTEGER,
   price_byr BIGINT,
   price_eur INTEGER,
-  price_usd INTEGER
+  price_usd INTEGER,
+  UNIQUE (agregate_item_id, agregate_for_type)
 );
