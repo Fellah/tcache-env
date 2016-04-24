@@ -1,0 +1,145 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Create TCache security group.",
+  "Resources": {
+    "TCacheVPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsSupport": "false",
+        "EnableDnsHostnames": "false",
+        "InstanceTenancy": "dedicated",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TCache"
+          }
+        ]
+      }
+    },
+    "TCacheSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "TCacheVPC"
+        },
+        "CidrBlock": "10.0.0.0/24",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TCache"
+          }
+        ]
+      }
+    },
+    "TCacheInternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": {
+              "Ref": "AWS::StackId"
+            }
+          }
+        ]
+      }
+    },
+    "TCacheAttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "TCacheVPC"
+        },
+        "InternetGatewayId": {
+          "Ref": "TCacheAttachGateway"
+        }
+      }
+    },
+    "TCacheRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "TCacheVPC"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": {
+              "Ref": "AWS::StackId"
+            }
+          }
+        ]
+      }
+    },
+    "TCacheRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "TCacheAttachGateway",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "TCacheRouteTable"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "TCacheInternetGateway"
+        }
+      }
+    },
+    "TCacheSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "TCacheSubnet"
+        },
+        "RouteTableId": {
+          "Ref": "TCacheRouteTable"
+        }
+      }
+    },
+    "TCacheSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "TCache SecurityGroup",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TCache"
+          }
+        ],
+        "VpcId": {
+          "Ref": "TCacheVPC"
+        }
+      }
+    },
+    "TCacheInstance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t2.nano",
+        "ImageId": "ami-ce9087a4",
+        "KeyName": "fellah",
+        "SecurityGroupIds": [
+          {
+            "Ref": "TCacheSecurityGroup"
+          }
+        ],
+        "SubnetId": {
+          "Ref": "TCacheSubnet"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TCache"
+          }
+        ]
+      }
+    }
+  }
+}
