@@ -1,6 +1,6 @@
 [Unit]
 Description=TCache
-Requires=tcache-db.service
+After=tcache-db.service
 
 [Service]
 ExecStartPre=-/usr/bin/docker rm --volumes tcache
