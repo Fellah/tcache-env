@@ -2,11 +2,13 @@ PWD = $(shell pwd)/$(shell dirname $(MAKEFILE_LIST))
 SSH_HOST = tcache
 
 setup:
-	ssh $(SSH_HOST) 'mkdir -p ~/.config/tcache ~/.config/systemd/user'
+	ssh $(SSH_HOST) 'mkdir -p ~/.config/tcache'
+	ssh $(SSH_HOST) 'mkdir -p ~/.config/systemd/user'
 	scp -r $(PWD)/tcache.env $(SSH_HOST):~/.config/tcache/tcache.env
+	scp -r $(PWD)/tcache.env $(SSH_HOST):~/.config/tcache/tcache-db.env
 	scp -r $(PWD)/tcache.service $(SSH_HOST):~/.config/systemd/user/tcache.service
+	scp -r $(PWD)/tcache.service $(SSH_HOST):~/.config/systemd/user/tcache-db.service
 	ssh $(SSH_HOST) 'systemctl --user daemon-reload'
-	ssh $(SSH_HOST) 'systemctl --user enable tcache.service'
 
 build:
 	go fmt github.com/fellah/tcache
@@ -17,7 +19,7 @@ build:
 deploy: build
 	docker push fellah/tcache
 	ssh $(SSH_HOST) 'docker pull fellah/tcache'
-	ssh $(SSH_HOST) 'systemctl --user restart tcache.service'
+#	ssh $(SSH_HOST) 'systemctl --user restart tcache.service'
 
 .DEFAULT_GOAL := deploy
 

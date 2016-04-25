@@ -1,110 +1,45 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Create TCache security group.",
-  "Resources": {
+  "Description": "Create and config security group and instance.",
+  "Parameters": {
     "TCacheVPC": {
-      "Type": "AWS::EC2::VPC",
-      "Properties": {
-        "CidrBlock": "10.0.0.0/16",
-        "EnableDnsSupport": "false",
-        "EnableDnsHostnames": "false",
-        "InstanceTenancy": "dedicated",
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "TCache"
-          }
-        ]
-      }
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "VPC Id"
+    },
+    "KeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "SSH Access Key Name"
     },
     "TCacheSubnet": {
-      "Type": "AWS::EC2::Subnet",
-      "Properties": {
-        "VpcId": {
-          "Ref": "TCacheVPC"
-        },
-        "CidrBlock": "10.0.0.0/24",
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "TCache"
-          }
-        ]
-      }
-    },
-    "TCacheInternetGateway": {
-      "Type": "AWS::EC2::InternetGateway",
-      "Properties": {
-        "Tags": [
-          {
-            "Key": "Application",
-            "Value": {
-              "Ref": "AWS::StackId"
-            }
-          }
-        ]
-      }
-    },
-    "TCacheAttachGateway": {
-      "Type": "AWS::EC2::VPCGatewayAttachment",
-      "Properties": {
-        "VpcId": {
-          "Ref": "TCacheVPC"
-        },
-        "InternetGatewayId": {
-          "Ref": "TCacheAttachGateway"
-        }
-      }
-    },
-    "TCacheRouteTable": {
-      "Type": "AWS::EC2::RouteTable",
-      "Properties": {
-        "VpcId": {
-          "Ref": "TCacheVPC"
-        },
-        "Tags": [
-          {
-            "Key": "Application",
-            "Value": {
-              "Ref": "AWS::StackId"
-            }
-          }
-        ]
-      }
-    },
-    "TCacheRoute": {
-      "Type": "AWS::EC2::Route",
-      "DependsOn": "TCacheAttachGateway",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "TCacheRouteTable"
-        },
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "GatewayId": {
-          "Ref": "TCacheInternetGateway"
-        }
-      }
-    },
-    "TCacheSubnetRouteTableAssociation": {
-      "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties": {
-        "SubnetId": {
-          "Ref": "TCacheSubnet"
-        },
-        "RouteTableId": {
-          "Ref": "TCacheRouteTable"
-        }
-      }
-    },
+      "Type": "AWS::EC2::Subnet::Id",
+      "Description": "Subnet Id"
+    }
+  },
+  "Resources": {
     "TCacheSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "TCache SecurityGroup",
+        "VpcId": {
+          "Ref": "TCacheVPC"
+        },
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
             "FromPort": "22",
             "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8080",
+            "ToPort": "8080",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "5432",
+            "ToPort": "5432",
             "CidrIp": "0.0.0.0/0"
           }
         ],
@@ -113,26 +48,40 @@
             "Key": "Name",
             "Value": "TCache"
           }
-        ],
-        "VpcId": {
-          "Ref": "TCacheVPC"
-        }
+        ]
       }
     },
     "TCacheInstance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t2.nano",
-        "ImageId": "ami-ce9087a4",
+        "InstanceType": "t2.micro",
+        "ImageId": "ami-2412f34b",
         "KeyName": "fellah",
-        "SecurityGroupIds": [
+        "BlockDeviceMappings": [
           {
-            "Ref": "TCacheSecurityGroup"
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "VolumeSize": "160",
+              "VolumeType": "gp2"
+            }
           }
         ],
-        "SubnetId": {
-          "Ref": "TCacheSubnet"
-        },
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "GroupSet": [
+              {
+                "Ref": "TCacheSecurityGroup"
+              }
+            ],
+            "SubnetId": {
+              "Ref": "TCacheSubnet"
+            }
+          }
+        ],
+        "Monitoring": "true",
+        "DisableApiTermination": "false",
         "Tags": [
           {
             "Key": "Name",

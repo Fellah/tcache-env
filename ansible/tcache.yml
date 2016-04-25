@@ -1,0 +1,31 @@
+- name: TCache
+  hosts: tcache
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+  tasks:
+    - apt: upgrade=dist
+
+    - apt_key: keyserver=hkp://p80.pool.sks-keyservers.net:80 id=58118E89F3A912897C070ADBF76221572C52609D
+    - apt_repository: repo='deb https://apt.dockerproject.org/repo ubuntu-wily main'
+    - apt: name=docker-engine update_cache=yes
+
+    - service: name=docker state=started
+    - service: name=docker enabled=yes
+
+    - user:
+        name=leta
+        shell=/bin/bash
+        groups=sudo,docker
+        password=$6$rounds=4096$Gwu5lboM$xDAFLblDkZeKvz25Z6RHxGDuAEWs8CvT8MT8G94NInaedglktRmpucUzJ/dZ6qA50aq2gRsPjaSKtJfSzVmwi/
+        append=yes
+
+    - user:
+        name=fellah
+        groups=sudo,docker
+        shell=/bin/bash
+        password=$6$rounds=4096$prnoITJe7Z$IJ01NmocgqSpQFZVvoIBxFOV4AVbakIQbCaXgEIlJxXpwtdzd4y6sT8ESeaxvm8dTZXHMLtwFlVjRrJN67PPh0
+        append=yes
+
+    - authorized_key: user=leta key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    - authorized_key: user=fellah key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
