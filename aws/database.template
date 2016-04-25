@@ -1,0 +1,69 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Create and config database.",
+  "Parameters": {
+    "LetaVPC": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "VPC Id"
+    }
+  },
+  "Resources": {
+    "LetaDBSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "LetaDB SecurityGroup",
+        "VpcId": {
+          "Ref": "LetaVPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "5432",
+            "ToPort": "5432",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "LetaDB"
+          }
+        ]
+      }
+    },
+    "LetaDB": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "DBInstanceClass": "db.t2.micro",
+        "AllocatedStorage": "160",
+        "StorageType": "gp2",
+        "Engine": "PostgreSQL",
+        "DBName": "leta",
+        "MasterUsername": "leta",
+        "MasterUserPassword": "foo",
+        "DBSecurityGroups": [
+          {
+            "Ref": "LetaDBSecurityGroup"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "LetaDB"
+          }
+        ]
+      },
+      "DeletionPolicy": "Snapshot"
+    }
+  },
+  "Outputs" : {
+    "Address" : {
+      "Description" : "Address",
+      "Value" : { "Fn::GetAtt" : [ "LetaDBSecurityGroup", "Endpoint.Address" ]}
+    },
+    "Port" : {
+      "Description" : "Port",
+      "Value" : { "Fn::GetAtt" : [ "LetaDBSecurityGroup", "Endpoint.Port" ]}
+    }
+  }
+}
